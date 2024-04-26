@@ -13,13 +13,6 @@ module.exports = (app) => {
   // Get list of users
   route.get('/', authenticationMiddleware, usersControllers.getUsers);
 
-  // Get list of users use pagination
-  app.get('/users', (req, res) => {
-    // page_number
-    const page_number = req.query.page_number || 0;
-    const page_size = req.query.page_size || 0;
-  });
-
   // Create user
   route.post(
     '/',
