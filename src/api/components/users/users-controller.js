@@ -12,15 +12,7 @@ const { User } = require('../../../models');
  */
 async function getUsers(request, response, next) {
   try {
-    const page_number = request.query.page_number || 1;
-    const page_size = request.query.page_size || 5  ;
-    const sort = request.query.sort;
-    const search = request.query.search;
-    let count, total_pages;
-    // has_previous_page = false;
-    // has_next_page = false;
-
-    const users = await usersService.getUsers(page_number, page_size, sort, search, count, total_pages);
+    const users = await usersService.getUsers(request);
     return response.status(200).json(users);
   } catch (error) {
     return next(error);

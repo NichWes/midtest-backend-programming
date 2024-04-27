@@ -1,14 +1,23 @@
 const usersRepository = require('./users-repository');
 const { hashPassword, passwordMatched } = require('../../../utils/password');
+const { User } = require('../../../models');
 
 /**
  * Get list of users
  * @returns {Array}
  */
-async function getUsers(page_number, page_size, sort, search, count, total_pages) {
-  const users = await usersRepository.getUsers(page_number, page_size, sort, search, count, total_pages);
+async function getUsers(request) {
+  const page_number = request.query.page_number || 1;
+  const page_size = request.query.page_size || (await User.countDocuments({}));
 
-  const results = {};
+  const users = await usersRepository.getUsers(page_number, page_size);
+
+  // const sort = request.query.sort;
+  // const search = request.query.search;
+  // has_previous_page = false;
+  // has_next_page = false;
+
+  const results = [];
   const data = [];
 
   for (let i = 0; i < users.length; i += 1) {
@@ -20,15 +29,15 @@ async function getUsers(page_number, page_size, sort, search, count, total_pages
     });
   }
 
-  results =  {
-    page_number: users.page_number,
-    page_size: users.page_size,
-    count: users.count,
+  results.push({
+    page_number: page_number,
+    page_size: page_size,
+    count: users.total,
     // total_pages: users.total_pages,
     // has_previous_page: has_previous_page,
     // has_next_page: has_next_page,
     data: data,
-  }
+  });
 
   return results;
 }
