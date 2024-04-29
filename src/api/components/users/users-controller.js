@@ -13,6 +13,11 @@ const { User } = require('../../../models');
 async function getUsers(request, response, next) {
   try {
     const users = await usersService.getUsers(request);
+
+    if (!users) {
+      throw errorResponder(errorTypes.NOT_FOUND, 'Invalid Query');
+    }
+
     return response.status(200).json(users);
   } catch (error) {
     return next(error);

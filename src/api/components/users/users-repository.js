@@ -4,17 +4,12 @@ const { User } = require('../../../models');
  * Get a list of users
  * @returns {Promise}
  */
-async function getUsers(pageNumber, pageSize) {
-  let total, total_pages;
+async function getUsers(pageNumber, pageSize, sort, search) {
 
-  return User.find()
-             .countDocuments()
-             .then(c => {
-                total = c;
-                return User.find()
-                    .skip(( pageNumber-1) * pageSize)
-                    .limit(pageSize);
-             })
+  return User.find(search)
+             .sort(sort)
+             .skip(( pageNumber-1) * pageSize)
+             .limit(pageSize)
              .then()
              .catch();
 }

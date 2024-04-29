@@ -7,15 +7,30 @@ const { User } = require('../../../models');
  * @returns {Array}
  */
 async function getUsers(request) {
+
   const page_number = request.query.page_number || 1;
   const page_size = request.query.page_size || (await User.countDocuments({}));
+  let sort = request.query.sort || "email";
+  let search = request.query.search || "";
 
-  const users = await usersRepository.getUsers(page_number, page_size);
+  request.query.sort ? (sort = request.query.sort.split(":")) : (sort = [sort]);
+  request.query.search ? (search = request.query.search.split(":")) : (search = [search]);
 
-  // const sort = request.query.sort;
-  // const search = request.query.search;
-  // has_previous_page = false;
-  // has_next_page = false;
+  let sortBy = {};
+  if(sort[1]) {
+    sortBy[sort[0]] = sort[1];
+  } else {
+    sortBy[sort[0]] = "asc";
+  }
+
+  let searchBy = {};
+  if(sort[1]) {
+    searchBy[search[0]] = {$regex: search[1], $options: "i"};
+  } else {
+    sortBy[sort[0]] = "";
+  }
+
+  const users = await usersRepository.getUsers(page_number, page_size, sortBy, searchBy);
 
   const results = [];
   const data = [];
@@ -29,13 +44,15 @@ async function getUsers(request) {
     });
   }
 
+  totalPages = Math.ceil((await User.countDocuments({})) / page_size);
+
   results.push({
     page_number: page_number,
     page_size: page_size,
-    count: users.total,
-    // total_pages: users.total_pages,
-    // has_previous_page: has_previous_page,
-    // has_next_page: has_next_page,
+    count: JSON.parse(JSON.stringify(users)).length,
+    total_pages: totalPages,
+    has_previous_page: Boolean(page_number - 1 != 0),
+    has_next_page: Boolean(totalPages - page_number != 0),
     data: data,
   });
 
