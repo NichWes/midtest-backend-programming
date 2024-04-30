@@ -4,6 +4,9 @@ const joiPassword = joi.extend(joiPasswordExtendCore);
 
 module.exports = {
   createUser: {
+    query: {
+      search: joi.string().pattern(new RegExp('^[a-zA-Z0-9]$')),
+    },
     body: {
       name: joi.string().min(1).max(100).required().label('Name'),
       email: joi.string().email().required().label('Email'),

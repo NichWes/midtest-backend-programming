@@ -6,7 +6,7 @@ const { User } = require('../../../models');
  */
 async function getUsers(pageNumber, pageSize, sort, search) {
 
-  return User.find(search)
+  return User.find(search) 
              .sort(sort)
              .skip(( pageNumber-1) * pageSize)
              .limit(pageSize)

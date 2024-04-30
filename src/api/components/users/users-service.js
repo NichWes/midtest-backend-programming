@@ -1,6 +1,7 @@
 const usersRepository = require('./users-repository');
 const { hashPassword, passwordMatched } = require('../../../utils/password');
 const { User } = require('../../../models');
+const { errorResponder, errorTypes } = require('../../../core/errors');
 
 /**
  * Get list of users
@@ -12,6 +13,7 @@ async function getUsers(request) {
   const page_size = request.query.page_size || (await User.countDocuments({}));
   let sort = request.query.sort || "email";
   let search = request.query.search || "";
+  totalPages = Math.ceil((await User.countDocuments({})) / page_size);
 
   request.query.sort ? (sort = request.query.sort.split(":")) : (sort = [sort]);
   request.query.search ? (search = request.query.search.split(":")) : (search = [search]);
@@ -43,8 +45,6 @@ async function getUsers(request) {
       email: user.email,
     });
   }
-
-  totalPages = Math.ceil((await User.countDocuments({})) / page_size);
 
   results.push({
     page_number: page_number,

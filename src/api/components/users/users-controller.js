@@ -12,10 +12,22 @@ const { User } = require('../../../models');
  */
 async function getUsers(request, response, next) {
   try {
+    // Validasi input query yang masuk
+    const page_number = request.query.page_number || 1;
+    const page_size = request.query.page_size || (await User.countDocuments({}));
+    
+    if (page_number > Math.abs(Math.ceil((await User.countDocuments({})) / page_size))) {
+      throw errorResponder(errorTypes.VALIDATION, 'page_number over a limit');
+    } else if(isNaN(page_number) || isNaN(page_size)) {
+      throw errorResponder(errorTypes.VALIDATION, 'page_number or page_size must be Integer');
+    } else if(page_number < 0 || page_size < 0) {
+      throw errorResponder(errorTypes.VALIDATION, 'page_number or page_size must be positive');
+    } 
+    
     const users = await usersService.getUsers(request);
 
     if (!users) {
-      throw errorResponder(errorTypes.NOT_FOUND, 'Invalid Query');
+      throw errorResponder(errorTypes.UNPROCESSABLE_ENTITY, 'Unknown users');
     }
 
     return response.status(200).json(users);
