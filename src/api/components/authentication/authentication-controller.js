@@ -1,6 +1,9 @@
 const { errorResponder, errorTypes } = require('../../../core/errors');
 const authenticationServices = require('./authentication-service');
 
+// const maxNumberOfFailedLogins = 3;
+// const timeWindowForFailedLogins = 60 * 60 * 0.5
+
 /**
  * Handle login request
  * @param {object} request - Express request object
