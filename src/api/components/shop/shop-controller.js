@@ -1,7 +1,6 @@
-const usersService = require('./users-service');
+const shopService = require('./shop-service');
 const { errorResponder, errorTypes } = require('../../../core/errors');
-const { boolean, bool, string } = require('joi');
-const { User } = require('../../../models');
+const { Product } = require('../../../models');
 
 /**
  * Handle get list of users request
@@ -10,16 +9,15 @@ const { User } = require('../../../models');
  * @param {object} next - Express route middlewares
  * @returns {object} Response object or pass an error to the next route
  */
-async function getUsers(request, response, next) {
+async function getProducts(request, response, next) {
   try {
     // Validasi input query yang masuk
     const page_number = request.query.page_number || 1;
     const page_size =
-      request.query.page_size || (await User.countDocuments({}));
-
+      request.query.page_size || (await Product.countDocuments({}));
     if (
       page_number >
-      Math.abs(Math.ceil((await User.countDocuments({})) / page_size))
+      Math.abs(Math.ceil((await Product.countDocuments({})) / page_size))
     ) {
       throw errorResponder(errorTypes.VALIDATION, 'page_number over a limit');
     } else if (isNaN(page_number) || isNaN(page_size)) {
@@ -34,13 +32,13 @@ async function getUsers(request, response, next) {
       );
     }
 
-    const users = await usersService.getUsers(request);
+    const products = await shopService.getProducts(request);
 
-    if (!users) {
-      throw errorResponder(errorTypes.UNPROCESSABLE_ENTITY, 'Unknown users');
+    if (!products) {
+      throw errorResponder(errorTypes.UNPROCESSABLE_ENTITY, 'Unknown products');
     }
 
-    return response.status(200).json(users);
+    return response.status(200).json(products);
   } catch (error) {
     return next(error);
   }
@@ -53,15 +51,15 @@ async function getUsers(request, response, next) {
  * @param {object} next - Express route middlewares
  * @returns {object} Response object or pass an error to the next route
  */
-async function getUser(request, response, next) {
+async function getProduct(request, response, next) {
   try {
-    const user = await usersService.getUser(request.params.id);
+    const product = await shopService.getProduct(request.params.id);
 
-    if (!user) {
-      throw errorResponder(errorTypes.UNPROCESSABLE_ENTITY, 'Unknown user');
+    if (!product) {
+      throw errorResponder(errorTypes.UNPROCESSABLE_ENTITY, 'Unknown product');
     }
 
-    return response.status(200).json(user);
+    return response.status(200).json(product);
   } catch (error) {
     return next(error);
   }
@@ -74,39 +72,41 @@ async function getUser(request, response, next) {
  * @param {object} next - Express route middlewares
  * @returns {object} Response object or pass an error to the next route
  */
-async function createUser(request, response, next) {
+async function inputProduct(request, response, next) {
   try {
+    const id = request.body.id;
     const name = request.body.name;
-    const email = request.body.email;
-    const password = request.body.password;
-    const password_confirm = request.body.password_confirm;
+    const price = request.body.price;
+    const stock = request.body.stock;
+    const unit = request.body.unit;
+    const desc = request.body.desc;
 
-    // Check confirmation password
-    if (password !== password_confirm) {
-      throw errorResponder(
-        errorTypes.INVALID_PASSWORD,
-        'Password confirmation mismatched'
-      );
-    }
+    // // Email must be unique
+    // const idIsRegistered = await shopService.idIsRegistered(id);
+    // if (idIsRegistered) {
+    //   throw errorResponder(
+    //     errorTypes.ID_ALREADY_TAKEN,
+    //     'ID is already registered'
+    //   );
+    // }
 
-    // Email must be unique
-    const emailIsRegistered = await usersService.emailIsRegistered(email);
-    if (emailIsRegistered) {
-      throw errorResponder(
-        errorTypes.EMAIL_ALREADY_TAKEN,
-        'Email is already registered'
-      );
-    }
-
-    const success = await usersService.createUser(name, email, password);
+    const success = await shopService.inputProduct(id, name, price, stock, unit, desc);
     if (!success) {
       throw errorResponder(
         errorTypes.UNPROCESSABLE_ENTITY,
-        'Failed to create user'
+        'Failed to input product'
       );
     }
 
-    return response.status(200).json({ name, email });
+    return response.status(200).json({ 
+      info: "INPUT PRODUCT SUCCESSFULLY",
+      id: id,
+      name: name,
+      price: price,
+      stock: stock,
+      unit: unit,
+      desc: desc,
+    });
   } catch (error) {
     return next(error);
   }
@@ -219,10 +219,10 @@ async function changePassword(request, response, next) {
 }
 
 module.exports = {
-  getUsers,
-  getUser,
-  createUser,
+  getProducts,
+  getProduct,
+  inputProduct,
   updateUser,
   deleteUser,
   changePassword,
-};
+}; 

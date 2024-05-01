@@ -1,18 +1,17 @@
-const usersRepository = require('./users-repository');
-const { hashPassword, passwordMatched } = require('../../../utils/password');
-const { User } = require('../../../models');
+const shopRepository = require('./shop-repository');
+const { Product } = require('../../../models');
 const { errorResponder, errorTypes } = require('../../../core/errors');
 
 /**
  * Get list of users
  * @returns {Array}
  */
-async function getUsers(request) {
+async function getProducts(request) {
   const page_number = request.query.page_number || 1;
-  const page_size = request.query.page_size || (await User.countDocuments({}));
-  let sort = request.query.sort || 'email';
+  const page_size = request.query.page_size || (await Product.countDocuments({}));
+  let sort = request.query.sort || 'name';
   let search = request.query.search || '';
-  totalPages = Math.ceil((await User.countDocuments({})) / page_size);
+  totalPages = Math.ceil((await Product.countDocuments({})) / page_size);
 
   request.query.sort ? (sort = request.query.sort.split(':')) : (sort = [sort]);
   request.query.search
@@ -33,7 +32,7 @@ async function getUsers(request) {
     sortBy[sort[0]] = '';
   }
 
-  const users = await usersRepository.getUsers(
+  const products = await shopRepository.getProducts(
     page_number,
     page_size,
     sortBy,
@@ -43,23 +42,26 @@ async function getUsers(request) {
   const results = [];
   const data = [];
 
-  for (let i = 0; i < users.length; i += 1) {
-    const user = users[i];
+  for (let i = 0; i < products.length; i += 1) {
+    const product = products[i];
     data.push({
-      id: user.id,
-      name: user.name,
-      email: user.email,
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      stock: product.stock,
+      unit: product.unit,
+      desc: product.desc,
     });
   }
 
   results.push({
     page_number: page_number,
     page_size: page_size,
-    count: JSON.parse(JSON.stringify(users)).length,
+    count: JSON.parse(JSON.stringify(products)).length,
     total_pages: totalPages,
     has_previous_page: Boolean(page_number - 1 != 0),
     has_next_page: Boolean(totalPages - page_number != 0),
-    data: data,
+    products: data,
   });
 
   return results;
@@ -70,7 +72,7 @@ async function getUsers(request) {
  * @param {string} id - User ID
  * @returns {Object}
  */
-async function getUser(id) {
+async function getProduct(id) {
   const user = await usersRepository.getUser(id);
 
   // User not found
@@ -92,12 +94,9 @@ async function getUser(id) {
  * @param {string} password - Password
  * @returns {boolean}
  */
-async function createUser(name, email, password) {
-  // Hash password
-  const hashedPassword = await hashPassword(password);
-
+async function inputProduct(id, name, price, stock, unit, desc) {
   try {
-    await usersRepository.createUser(name, email, hashedPassword);
+    await shopRepository.inputProduct(id, name, price, stock, unit, desc);
   } catch (err) {
     return null;
   }
@@ -206,9 +205,9 @@ async function changePassword(userId, password) {
 }
 
 module.exports = {
-  getUsers,
-  getUser,
-  createUser,
+  getProducts,
+  getProduct,
+  inputProduct,
   updateUser,
   deleteUser,
   emailIsRegistered,

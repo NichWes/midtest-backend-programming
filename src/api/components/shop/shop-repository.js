@@ -1,11 +1,11 @@
-const { User } = require('../../../models');
+const { Product } = require('../../../models');
 
 /**
  * Get a list of users
  * @returns {Promise}
  */
-async function getUsers(pageNumber, pageSize, sort, search) {
-  return User.find(search)
+async function getProducts(pageNumber, pageSize, sort, search) {
+  return Product.find(search)
     .sort(sort)
     .skip((pageNumber - 1) * pageSize)
     .limit(pageSize)
@@ -18,8 +18,8 @@ async function getUsers(pageNumber, pageSize, sort, search) {
  * @param {string} id - User ID
  * @returns {Promise}
  */
-async function getUser(id) {
-  return User.findById(id);
+async function getProduct(id) {
+  return Product.findById(id);
 }
 
 /**
@@ -29,11 +29,14 @@ async function getUser(id) {
  * @param {string} password - Hashed password
  * @returns {Promise}
  */
-async function createUser(name, email, password) {
-  return User.create({
+async function inputProduct(id, name, price, stock, unit, desc) {
+  return Product.create({
+    id,
     name,
-    email,
-    password,
+    price,
+    stock,
+    unit, 
+    desc,
   });
 }
 
@@ -87,9 +90,9 @@ async function changePassword(id, password) {
 }
 
 module.exports = {
-  getUsers,
-  getUser,
-  createUser,
+  getProducts,
+  getProduct,
+  inputProduct,
   updateUser,
   deleteUser,
   getUserByEmail,
