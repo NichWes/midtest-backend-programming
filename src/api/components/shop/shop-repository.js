@@ -1,3 +1,4 @@
+const { parseInt } = require('lodash');
 const { Product } = require('../../../models');
 
 /**
@@ -87,8 +88,16 @@ async function getProductByName(name) {
  * @param {string} password - New hashed password
  * @returns {Promise}
  */
-async function changePassword(id, password) {
-  return User.updateOne({ _id: id }, { $set: { password } });
+async function orderProduct(id, quantity) {
+
+  const produk = Product.findById(id);
+  const Stok = parseInt(produk.stock);
+  const Quantity = parseInt(quantity);
+
+  const stok = (Stok - Quantity);
+  const stock_ = stok.toString();
+
+  return Product.updateOne({ _id: id }, { $set: {stock: stock_} });
 }
 
 module.exports = {
@@ -98,5 +107,5 @@ module.exports = {
   updateProduct,
   deleteProduct,
   getProductByName,
-  changePassword,
+  orderProduct,
 };

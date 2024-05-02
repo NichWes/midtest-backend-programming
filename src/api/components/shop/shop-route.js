@@ -29,6 +29,14 @@ module.exports = (app) => {
     shopControllers.inputProduct
   );
 
+  // Buy product
+  route.put(
+    '/products/order', 
+    authenticationMiddleware,
+    celebrate(shopValidator.orderProduct),
+    shopControllers.orderProduct
+  );
+
   // Get product detail
   route.get('/products/:id', authenticationMiddleware, shopControllers.getProduct);
 

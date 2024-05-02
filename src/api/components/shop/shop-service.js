@@ -168,38 +168,22 @@ async function nameIsRegistered(id) {
 }
 
 /**
- * Check whether the password is correct
- * @param {string} userId - User ID
- * @param {string} password - Password
- * @returns {boolean}
- */
-async function checkPassword(userId, password) {
-  const user = await usersRepository.getUser(userId);
-  return passwordMatched(password, user.password);
-}
-
-/**
  * Change user password
  * @param {string} userId - User ID
  * @param {string} password - Password
  * @returns {boolean}
  */
-async function changePassword(userId, password) {
-  const user = await usersRepository.getUser(userId);
+async function orderProduct(id, quantity) {
+  const product = await shopRepository.getProduct(id);
 
   // Check if user not found
-  if (!user) {
+  if (!product) {
     return null;
   }
 
-  const hashedPassword = await hashPassword(password);
+ const orderSuccess = await shopRepository.orderProduct(id, quantity);
 
-  const changeSuccess = await usersRepository.changePassword(
-    userId,
-    hashedPassword
-  );
-
-  if (!changeSuccess) {
+  if (!orderSuccess) {
     return null;
   }
 
@@ -213,6 +197,5 @@ module.exports = {
   updateProduct,
   deleteProduct,
   nameIsRegistered,
-  checkPassword,
-  changePassword,
+  orderProduct,
 };

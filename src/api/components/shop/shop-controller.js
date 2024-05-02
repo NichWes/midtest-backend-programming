@@ -1,6 +1,7 @@
 const shopService = require('./shop-service');
 const { errorResponder, errorTypes } = require('../../../core/errors');
 const { Product } = require('../../../models');
+const { now } = require('lodash');
 
 /**
  * Handle get list of users request
@@ -17,7 +18,7 @@ async function getProducts(request, response, next) {
       request.query.page_size || (await Product.countDocuments({}));
     if (
       page_number >
-      Math.abs(Math.ceil((await Product.countDocuments({})) / page_size))
+      Math.abs(Math.ceil((await Product.countDocuments({}))  / page_size))
     ) {
       throw errorResponder(errorTypes.VALIDATION, 'page_number over a limit');
     } else if (isNaN(page_number) || isNaN(page_size)) {
@@ -192,39 +193,38 @@ async function deleteProduct(request, response, next) {
  * @param {object} next - Express route middlewares
  * @returns {object} Response object or pass an error to the next route
  */
-async function changePassword(request, response, next) {
+async function orderProduct(request, response, next) {
   try {
-    // Check password confirmation
-    if (request.body.password_new !== request.body.password_confirm) {
-      throw errorResponder(
-        errorTypes.INVALID_PASSWORD,
-        'Password confirmation mismatched'
-      );
-    }
 
-    // Check old password
-    if (
-      !(await usersService.checkPassword(
-        request.params.id,
-        request.body.password_old
-      ))
-    ) {
-      throw errorResponder(errorTypes.INVALID_CREDENTIALS, 'Wrong password');
-    }
+    const id = request.body.id;
+    const quantity = request.body.quantity;
 
-    const changeSuccess = await usersService.changePassword(
-      request.params.id,
-      request.body.password_new
-    );
-
-    if (!changeSuccess) {
+    if(quantity > await shopService.getProduct(id).stock) {
       throw errorResponder(
         errorTypes.UNPROCESSABLE_ENTITY,
-        'Failed to change password'
+        'order exceeds stock quantity, reduce order quantity'
       );
     }
 
-    return response.status(200).json({ id: request.params.id });
+    const orderSuccess = await shopService.orderProduct(id, quantity);
+
+    if (!orderSuccess) {
+      throw errorResponder(
+        errorTypes.UNPROCESSABLE_ENTITY,
+        'Failed to order product'
+      );
+    }
+
+    const produk = await shopService.getProduct(id);
+
+    return response.status(200).json({ 
+      id: id,
+      info: "ORDER SUCCESS",
+      name: produk.name,
+      price: produk.price,
+      order_quantity: quantity,
+      unit: produk.unit,
+     });
   } catch (error) {
     return next(error);
   }
@@ -236,5 +236,5 @@ module.exports = {
   inputProduct,
   updateProduct,
   deleteProduct,
-  changePassword,
+  orderProduct,
 }; 
