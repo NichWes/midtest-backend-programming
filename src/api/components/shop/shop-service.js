@@ -1,11 +1,10 @@
 const shopRepository = require('./shop-repository');
 const { Product } = require('../../../models');
-const { errorResponder, errorTypes } = require('../../../core/errors');
 
 /**
  * Get list of users
  * @returns {Array}
- */
+ */ 
 async function getProducts(request) {
   const page_number = request.query.page_number || 1;
   const page_size = request.query.page_size || (await Product.countDocuments({}));
@@ -69,21 +68,24 @@ async function getProducts(request) {
 
 /**
  * Get user detail
- * @param {string} id - User ID
+ * @param {string} id - product ID
  * @returns {Object}
  */
 async function getProduct(id) {
-  const user = await usersRepository.getUser(id);
+  const product = await shopRepository.getProduct(id);
 
-  // User not found
-  if (!user) {
+  // Product not found
+  if (!product) {
     return null;
   }
 
   return {
-    id: user.id,
-    name: user.name,
-    email: user.email,
+    id: product.id,
+    name: product.name,
+    price: product.price,
+    stock: product.stock,
+    unit: product.unit,
+    desc: product.desc
   };
 }
 
@@ -111,16 +113,16 @@ async function inputProduct(id, name, price, stock, unit, desc) {
  * @param {string} email - Email
  * @returns {boolean}
  */
-async function updateUser(id, name, email) {
-  const user = await usersRepository.getUser(id);
+async function updateProduct(id, name, price, stock, unit, desc) {
+  const product = await shopRepository.getProduct(id);
 
   // User not found
-  if (!user) {
+  if (!product) {
     return null;
   }
 
   try {
-    await usersRepository.updateUser(id, name, email);
+    await shopRepository.updateProduct(id, name, price, stock, unit, desc);
   } catch (err) {
     return null;
   }
@@ -133,16 +135,16 @@ async function updateUser(id, name, email) {
  * @param {string} id - User ID
  * @returns {boolean}
  */
-async function deleteUser(id) {
-  const user = await usersRepository.getUser(id);
+async function deleteProduct(id) {
+  const product = await shopRepository.deleteProduct(id);
 
-  // User not found
-  if (!user) {
+  // Product not found
+  if (!product) {
     return null;
   }
 
   try {
-    await usersRepository.deleteUser(id);
+    await shopRepository.deleteProduct(id);
   } catch (err) {
     return null;
   }
@@ -155,10 +157,10 @@ async function deleteUser(id) {
  * @param {string} email - Email
  * @returns {boolean}
  */
-async function emailIsRegistered(email) {
-  const user = await usersRepository.getUserByEmail(email);
+async function nameIsRegistered(id) {
+  const product = await shopRepository.getProductByName(id);
 
-  if (user) {
+  if (product) {
     return true;
   }
 
@@ -208,9 +210,9 @@ module.exports = {
   getProducts,
   getProduct,
   inputProduct,
-  updateUser,
-  deleteUser,
-  emailIsRegistered,
+  updateProduct,
+  deleteProduct,
+  nameIsRegistered,
   checkPassword,
   changePassword,
 };

@@ -29,9 +29,8 @@ async function getProduct(id) {
  * @param {string} password - Hashed password
  * @returns {Promise}
  */
-async function inputProduct(id, name, price, stock, unit, desc) {
+async function inputProduct(name, price, stock, unit, desc) {
   return Product.create({
-    id,
     name,
     price,
     stock,
@@ -47,15 +46,18 @@ async function inputProduct(id, name, price, stock, unit, desc) {
  * @param {string} email - Email
  * @returns {Promise}
  */
-async function updateUser(id, name, email) {
-  return User.updateOne(
+async function updateProduct(id, name, price, stock, unit, desc) {
+  return Product.updateOne(
     {
       _id: id,
     },
     {
       $set: {
         name,
-        email,
+        price,
+        stock,
+        unit,
+        desc
       },
     }
   );
@@ -66,8 +68,8 @@ async function updateUser(id, name, email) {
  * @param {string} id - User ID
  * @returns {Promise}
  */
-async function deleteUser(id) {
-  return User.deleteOne({ _id: id });
+async function deleteProduct(id) {
+  return Product.deleteOne({ _id: id });
 }
 
 /**
@@ -75,8 +77,8 @@ async function deleteUser(id) {
  * @param {string} email - Email
  * @returns {Promise}
  */
-async function getUserByEmail(email) {
-  return User.findOne({ email });
+async function getProductByName(name) {
+  return Product.findOne({ name });
 }
 
 /**
@@ -93,8 +95,8 @@ module.exports = {
   getProducts,
   getProduct,
   inputProduct,
-  updateUser,
-  deleteUser,
-  getUserByEmail,
+  updateProduct,
+  deleteProduct,
+  getProductByName,
   changePassword,
 };

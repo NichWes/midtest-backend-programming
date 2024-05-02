@@ -1,5 +1,4 @@
 const productsSchema = {
-  id: String,
   name: String,
   price: String,
   stock: String,

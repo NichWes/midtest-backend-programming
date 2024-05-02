@@ -74,23 +74,22 @@ async function getProduct(request, response, next) {
  */
 async function inputProduct(request, response, next) {
   try {
-    const id = request.body.id;
     const name = request.body.name;
     const price = request.body.price;
     const stock = request.body.stock;
     const unit = request.body.unit;
     const desc = request.body.desc;
 
-    // // Email must be unique
-    // const idIsRegistered = await shopService.idIsRegistered(id);
-    // if (idIsRegistered) {
-    //   throw errorResponder(
-    //     errorTypes.ID_ALREADY_TAKEN,
-    //     'ID is already registered'
-    //   );
-    // }
+    // Name must be unique
+    const nameIsRegistered = await shopService.nameIsRegistered(name);
+    if (nameIsRegistered) {
+      throw errorResponder(
+        errorTypes.NAME_ALREADY_TAKEN,
+        'Name is already registered'
+      );
+    }
 
-    const success = await shopService.inputProduct(id, name, price, stock, unit, desc);
+    const success = await shopService.inputProduct(name, price, stock, unit, desc);
     if (!success) {
       throw errorResponder(
         errorTypes.UNPROCESSABLE_ENTITY,
@@ -100,7 +99,6 @@ async function inputProduct(request, response, next) {
 
     return response.status(200).json({ 
       info: "INPUT PRODUCT SUCCESSFULLY",
-      id: id,
       name: name,
       price: price,
       stock: stock,
@@ -119,30 +117,41 @@ async function inputProduct(request, response, next) {
  * @param {object} next - Express route middlewares
  * @returns {object} Response object or pass an error to the next route
  */
-async function updateUser(request, response, next) {
+async function updateProduct(request, response, next) {
   try {
     const id = request.params.id;
-    const name = request.body.name;
-    const email = request.body.email;
+    const Name = request.body.name || await shopService.getProduct(id).name;
+    const Price = request.body.price || await shopService.getProduct(id).price;
+    const Stock = request.body.stock || await shopService.getProduct(id).stock;
+    const Unit = request.body.unit || await shopService.getProduct(id).unit;
+    const Desc = request.body.desc || await shopService.getProduct(id).desc;
 
-    // Email must be unique
-    const emailIsRegistered = await usersService.emailIsRegistered(email);
-    if (emailIsRegistered) {
+    // Name must be unique
+    const nameIsRegistered = await shopService.nameIsRegistered(request.body.name);
+    if (nameIsRegistered) {
       throw errorResponder(
-        errorTypes.EMAIL_ALREADY_TAKEN,
-        'Email is already registered'
+        errorTypes.NAME_ALREADY_TAKEN,
+        'Name is already registered'
       );
     }
 
-    const success = await usersService.updateUser(id, name, email);
+    const success = await shopService.updateProduct(id, Name, Price, Stock, Unit, Desc);
     if (!success) {
       throw errorResponder(
         errorTypes.UNPROCESSABLE_ENTITY,
-        'Failed to update user'
+        'Failed to update product'
       );
     }
 
-    return response.status(200).json({ id });
+    return response.status(200).json({ 
+      product_id: id,
+      info: "SUCCESS UPDATE PRODUCT",
+      name: Name,
+      price: Price,
+      stock: Stock,
+      unit: Unit,
+      desc: Desc,
+     });
   } catch (error) {
     return next(error);
   }
@@ -155,11 +164,11 @@ async function updateUser(request, response, next) {
  * @param {object} next - Express route middlewares
  * @returns {object} Response object or pass an error to the next route
  */
-async function deleteUser(request, response, next) {
+async function deleteProduct(request, response, next) {
   try {
     const id = request.params.id;
 
-    const success = await usersService.deleteUser(id);
+    const success = await shopService.deleteProduct(id);
     if (!success) {
       throw errorResponder(
         errorTypes.UNPROCESSABLE_ENTITY,
@@ -167,7 +176,10 @@ async function deleteUser(request, response, next) {
       );
     }
 
-    return response.status(200).json({ id });
+    return response.status(200).json({ 
+      id: id,
+      info: "PRODUCT SUCCESSFULLY DELETED"
+    });
   } catch (error) {
     return next(error);
   }
@@ -222,7 +234,7 @@ module.exports = {
   getProducts,
   getProduct,
   inputProduct,
-  updateUser,
-  deleteUser,
+  updateProduct,
+  deleteProduct,
   changePassword,
 }; 

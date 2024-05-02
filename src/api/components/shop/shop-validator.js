@@ -5,7 +5,6 @@ const joiPassword = joi.extend(joiPasswordExtendCore);
 module.exports = {
   inputProduct: {
     body: {
-      id: joi.string().min(1).max(30).alphanum().required().label('Id'),
       name: joi.string().min(1).max(100).required().label('Name'),
       price: joiPassword.string().min(1).max(12).required().minOfNumeric(1).label('Price'),
       stock: joiPassword.string().min(1).max(15).minOfNumeric(1).required().label('Stock'),
@@ -14,10 +13,13 @@ module.exports = {
     },
   },
 
-  updateUser: {
+  updateProduct: {
     body: {
-      name: joi.string().min(1).max(100).required().label('Name'),
-      email: joi.string().email().required().label('Email'),
+      name: joi.string().min(1).max(100).label('Name'),
+      price: joiPassword.string().min(1).max(12).minOfNumeric(1).label('Price'),
+      stock: joiPassword.string().min(1).max(15).minOfNumeric(1).label('Stock'),
+      unit: joi.string().min(1).max(10).label('Unit'),
+      desc: joi.string().min(1).max(150).label('Description'),
     },
   },
 

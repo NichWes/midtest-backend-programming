@@ -14,9 +14,9 @@ module.exports = (app) => {
   route.get('/', authenticationMiddleware, shopControllers.getProducts);
 
   // Get list of products
-  route.get('/product', authenticationMiddleware, shopControllers.getProducts);
+  route.get('/products', authenticationMiddleware, shopControllers.getProducts);
 
-  // Create user
+  // Create Product
   route.post(
     '/',
     celebrate(shopValidator.inputProduct),
@@ -24,22 +24,22 @@ module.exports = (app) => {
   );
 
   route.post(
-    '/product',
+    '/products',
     celebrate(shopValidator.inputProduct),
     shopControllers.inputProduct
   );
 
-  // // Get user detail
-  // route.get('/:id', authenticationMiddleware, shopControllers.getProduct);
+  // Get product detail
+  route.get('/products/:id', authenticationMiddleware, shopControllers.getProduct);
 
-  // // Update user
-  // route.put(
-  //   '/:id',
-  //   authenticationMiddleware,
-  //   celebrate(shopValidator.updateProduct),
-  //   shopControllers.updateProduct
-  // );
+  // Update product
+  route.put(
+    '/products/:id',
+    authenticationMiddleware,
+    celebrate(shopValidator.updateProduct),
+    shopControllers.updateProduct
+  );
 
-  // // Delete user
-  // route.delete('/:id', authenticationMiddleware, shopControllers.deleteProduct);
+  // Delete product
+  route.delete('/products/:id', authenticationMiddleware, shopControllers.deleteProduct);
 };
