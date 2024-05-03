@@ -1,8 +1,7 @@
-const { parseInt } = require('lodash');
 const { Product } = require('../../../models');
 
 /**
- * Get a list of users
+ * Get a list of product
  * @returns {Promise}
  */
 async function getProducts(pageNumber, pageSize, sort, search) {
@@ -15,8 +14,8 @@ async function getProducts(pageNumber, pageSize, sort, search) {
 }
 
 /**
- * Get user detail
- * @param {string} id - User ID
+ * Get product detail
+ * @param {string} id - Product ID
  * @returns {Promise}
  */
 async function getProduct(id) {
@@ -24,15 +23,19 @@ async function getProduct(id) {
 }
 
 /**
- * Create new user
+ * input product
  * @param {string} name - Name
- * @param {string} email - Email
- * @param {string} password - Hashed password
+ * @param {string} category - Category
+ * @param {string} price - Price
+ * @param {string} stock - Stock
+ * @param {string} unit - Unit
+ * @param {string} desc - Desc
  * @returns {Promise}
  */
-async function inputProduct(name, price, stock, unit, desc) {
+async function inputProduct(name, category, price, stock, unit, desc) {
   return Product.create({
     name,
+    category,
     price,
     stock,
     unit, 
@@ -41,13 +44,17 @@ async function inputProduct(name, price, stock, unit, desc) {
 }
 
 /**
- * Update existing user
- * @param {string} id - User ID
+ * Update existing product
+ * @param {string} id - Product ID
  * @param {string} name - Name
- * @param {string} email - Email
+ * @param {string} category - Category
+ * @param {string} price - Price
+ * @param {string} stock - Stock
+ * @param {string} unit - Unit
+ * @param {string} desc - Desc
  * @returns {Promise}
  */
-async function updateProduct(id, name, price, stock, unit, desc) {
+async function updateProduct(id, name, category, price, stock, unit, desc) {
   return Product.updateOne(
     {
       _id: id,
@@ -55,6 +62,7 @@ async function updateProduct(id, name, price, stock, unit, desc) {
     {
       $set: {
         name,
+        category,
         price,
         stock,
         unit,
@@ -65,8 +73,8 @@ async function updateProduct(id, name, price, stock, unit, desc) {
 }
 
 /**
- * Delete a user
- * @param {string} id - User ID
+ * Delete a procuct
+ * @param {string} id - Product ID
  * @returns {Promise}
  */
 async function deleteProduct(id) {
@@ -74,8 +82,8 @@ async function deleteProduct(id) {
 }
 
 /**
- * Get user by email to prevent duplicate email
- * @param {string} email - Email
+ * Get product by name to prevent duplicate name
+ * @param {string} name - Name
  * @returns {Promise}
  */
 async function getProductByName(name) {
@@ -83,21 +91,14 @@ async function getProductByName(name) {
 }
 
 /**
- * Update user password
- * @param {string} id - User ID
- * @param {string} password - New hashed password
+ * order product
+ * @param {string} id - Product ID
+ * @param {string} quantity - Quantity
  * @returns {Promise}
  */
 async function orderProduct(id, quantity) {
 
-  const produk = Product.findById(id);
-  const Stok = parseInt(produk.stock);
-  const Quantity = parseInt(quantity);
-
-  const stok = (Stok - Quantity);
-  const stock_ = stok.toString();
-
-  return Product.updateOne({ _id: id }, { $set: {stock: stock_} });
+  return Product.updateOne({ _id: id }, { $set: {stock: quantity} });
 }
 
 module.exports = {

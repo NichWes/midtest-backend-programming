@@ -6,6 +6,7 @@ module.exports = {
   inputProduct: {
     body: {
       name: joi.string().min(1).max(100).required().label('Name'),
+      category: joi.string().min(1).max(100).required().label('Category'),
       price: joiPassword.string().min(1).max(12).required().minOfNumeric(1).label('Price'),
       stock: joiPassword.string().min(1).max(15).minOfNumeric(1).required().label('Stock'),
       unit: joi.string().min(1).max(10).required().label('Unit'),
@@ -16,6 +17,7 @@ module.exports = {
   updateProduct: {
     body: {
       name: joi.string().min(1).max(100).label('Name'),
+      category: joi.string().min(1).max(100).required().label('Category'),
       price: joiPassword.string().min(1).max(12).minOfNumeric(1).label('Price'),
       stock: joiPassword.string().min(1).max(15).minOfNumeric(1).label('Stock'),
       unit: joi.string().min(1).max(10).label('Unit'),

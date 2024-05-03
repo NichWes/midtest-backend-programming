@@ -2,10 +2,11 @@ const shopRepository = require('./shop-repository');
 const { Product } = require('../../../models');
 
 /**
- * Get list of users
+ * Get list of products
  * @returns {Array}
  */ 
 async function getProducts(request) {
+  // pengecekan query yang masuk
   const page_number = request.query.page_number || 1;
   const page_size = request.query.page_size || (await Product.countDocuments({}));
   let sort = request.query.sort || 'name';
@@ -41,10 +42,12 @@ async function getProducts(request) {
   const results = [];
   const data = [];
 
+  // masukkan data yang di cari ke array of object
   for (let i = 0; i < products.length; i += 1) {
     const product = products[i];
     data.push({
       id: product.id,
+      category: product.category,
       name: product.name,
       price: product.price,
       stock: product.stock,
@@ -53,6 +56,7 @@ async function getProducts(request) {
     });
   }
 
+  // masukkan semua variabel yang dibutuhkan agar sesuai dengan template yang diinginkan
   results.push({
     page_number: page_number,
     page_size: page_size,
@@ -67,7 +71,7 @@ async function getProducts(request) {
 }
 
 /**
- * Get user detail
+ * Get product detail
  * @param {string} id - product ID
  * @returns {Object}
  */
@@ -81,6 +85,7 @@ async function getProduct(id) {
 
   return {
     id: product.id,
+    category: product.category,
     name: product.name,
     price: product.price,
     stock: product.stock,
@@ -90,15 +95,18 @@ async function getProduct(id) {
 }
 
 /**
- * Create new user
+ * Create new product
  * @param {string} name - Name
- * @param {string} email - Email
- * @param {string} password - Password
+ * @param {string} category - Category
+ * @param {string} price - Price
+ * @param {string} stock - Stock
+ * @param {string} unit - Unit
+ * @param {string} desc - Desc
  * @returns {boolean}
  */
-async function inputProduct(id, name, price, stock, unit, desc) {
+async function inputProduct(name, category, price, stock, unit, desc) {
   try {
-    await shopRepository.inputProduct(id, name, price, stock, unit, desc);
+    await shopRepository.inputProduct(name, category, price, stock, unit, desc);
   } catch (err) {
     return null;
   }
@@ -107,22 +115,26 @@ async function inputProduct(id, name, price, stock, unit, desc) {
 }
 
 /**
- * Update existing user
- * @param {string} id - User ID
+ * Update existing product
+ * @param {string} id - product Id
  * @param {string} name - Name
- * @param {string} email - Email
+ * @param {string} category - Category
+ * @param {string} price - Price
+ * @param {string} stock - Stock
+ * @param {string} unit - Unit
+ * @param {string} desc - Desc
  * @returns {boolean}
  */
-async function updateProduct(id, name, price, stock, unit, desc) {
+async function updateProduct(id, name, category, price, stock, unit, desc) {
   const product = await shopRepository.getProduct(id);
 
-  // User not found
+  // check if Product not found
   if (!product) {
     return null;
   }
 
   try {
-    await shopRepository.updateProduct(id, name, price, stock, unit, desc);
+    await shopRepository.updateProduct(id, name, category, price, stock, unit, desc);
   } catch (err) {
     return null;
   }
@@ -131,14 +143,14 @@ async function updateProduct(id, name, price, stock, unit, desc) {
 }
 
 /**
- * Delete user
- * @param {string} id - User ID
+ * Delete product
+ * @param {string} id - Product Id
  * @returns {boolean}
  */
 async function deleteProduct(id) {
   const product = await shopRepository.deleteProduct(id);
 
-  // Product not found
+  // check if Product not found
   if (!product) {
     return null;
   }
@@ -153,12 +165,12 @@ async function deleteProduct(id) {
 }
 
 /**
- * Check whether the email is registered
- * @param {string} email - Email
+ * Check whether the name is registered
+ * @param {string} name - Name
  * @returns {boolean}
  */
-async function nameIsRegistered(id) {
-  const product = await shopRepository.getProductByName(id);
+async function nameIsRegistered(name) {
+  const product = await shopRepository.getProductByName(name);
 
   if (product) {
     return true;
@@ -168,15 +180,15 @@ async function nameIsRegistered(id) {
 }
 
 /**
- * Change user password
- * @param {string} userId - User ID
- * @param {string} password - Password
+ * order product
+ * @param {string} id - Product ID
+ * @param {string} quantity - Quantity
  * @returns {boolean}
  */
 async function orderProduct(id, quantity) {
   const product = await shopRepository.getProduct(id);
 
-  // Check if user not found
+  // Check if product not found
   if (!product) {
     return null;
   }

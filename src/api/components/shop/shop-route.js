@@ -23,6 +23,7 @@ module.exports = (app) => {
     shopControllers.inputProduct
   );
 
+  // Create Product
   route.post(
     '/products',
     celebrate(shopValidator.inputProduct),
