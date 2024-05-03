@@ -179,7 +179,7 @@ async function updateProduct(request, response, next) {
 async function deleteProduct(request, response, next) {
   try {
     const id = request.params.id;
-
+  
     const success = await shopService.deleteProduct(id);
     if (!success) {
       throw errorResponder(
@@ -190,7 +190,6 @@ async function deleteProduct(request, response, next) {
 
     return response.status(200).json({ 
       id: id,
-      name: await shopService.getProduct(id).name,
       info: "PRODUCT SUCCESSFULLY DELETED"
     });
   } catch (error) {
