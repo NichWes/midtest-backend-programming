@@ -1,5 +1,6 @@
 const joi = require('joi');
 const { joiPasswordExtendCore } = require('joi-password');
+const { name_Product, product_Id, quantity_Order } = require('../../../models/orders-schema');
 const joiPassword = joi.extend(joiPasswordExtendCore);
 
 module.exports = {
@@ -22,6 +23,15 @@ module.exports = {
       stock: joiPassword.string().min(1).max(15).minOfNumeric(1).label('Stock'),
       unit: joi.string().min(1).max(10).label('Unit'),
       desc: joi.string().min(1).max(150).label('Description'),
+    },
+  },
+
+  updateOrder: {
+    body: {
+      product_Name: joi.string().min(1).max(100).label('Product Name'),
+      category: joi.string().min(1).max(100).label('Category'),
+      price: joiPassword.string().min(1).max(12).minOfNumeric(1).label('Price'),
+      quantity_Order: joiPassword.string().min(1).max(15).minOfNumeric(1).label('Quantity Order'),
     },
   },
 

@@ -10,12 +10,7 @@ const route = express.Router();
 module.exports = (app) => {
   app.use('/shop', route);
 
-  // Get list of products
-  route.get('/', authenticationMiddleware, shopControllers.getProducts);
-
-  // Get list of products
-  route.get('/products', authenticationMiddleware, shopControllers.getProducts);
-
+  // CREATE
   // Create Product
   route.post(
     '/',
@@ -30,17 +25,31 @@ module.exports = (app) => {
     shopControllers.inputProduct
   );
 
-  // Buy product
-  route.put(
-    '/products/order', 
+  // Order product
+  route.post(
+    '/orders', 
     authenticationMiddleware,
     celebrate(shopValidator.orderProduct),
     shopControllers.orderProduct
   );
 
+  // READ
+  // Get list of products
+  route.get('/', authenticationMiddleware, shopControllers.getProducts);
+
+  // Get list of products
+  route.get('/products', authenticationMiddleware, shopControllers.getProducts);
+
   // Get product detail
   route.get('/products/:id', authenticationMiddleware, shopControllers.getProduct);
 
+  // Get list of orders
+  route.get('/orders', authenticationMiddleware, shopControllers.getOrders);
+
+  // Get order detail
+  route.get('/orders/:id', authenticationMiddleware, shopControllers.getOrder);
+
+  // UPDATE
   // Update product
   route.put(
     '/products/:id',
@@ -49,6 +58,18 @@ module.exports = (app) => {
     shopControllers.updateProduct
   );
 
+  // Update order
+  route.put(
+    '/orders/:id',
+    authenticationMiddleware,
+    celebrate(shopValidator.updateOrder),
+    shopControllers.updateOrder
+  );
+
+  // DELETE
   // Delete product
   route.delete('/products/:id', authenticationMiddleware, shopControllers.deleteProduct);
+
+  // Delete order
+  route.delete('/orders/:id', authenticationMiddleware, shopControllers.deleteOrder);
 };

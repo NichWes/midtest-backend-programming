@@ -1,6 +1,7 @@
 const shopService = require('./shop-service');
 const { errorResponder, errorTypes } = require('../../../core/errors');
 const { Product } = require('../../../models');
+const { Order } = require('../../../models');
 
 /**
  * Handle get list of products request
@@ -184,7 +185,7 @@ async function deleteProduct(request, response, next) {
     if (!success) {
       throw errorResponder(
         errorTypes.UNPROCESSABLE_ENTITY,
-        'Failed to delete user'
+        'failed to delete product, insert a valid id'
       );
     }
 
@@ -205,39 +206,174 @@ async function deleteProduct(request, response, next) {
  * @returns {object} Response object or pass an error to the next route
  */
 async function orderProduct(request, response, next) {
-  try {
-    // mengambil id dan quantity yang ingin dipesan
+  try{
+    // mengambil variabel dari request body
     const id = request.body.id;
-    const produk = await shopService.getProduct(id);
     const quantity = request.body.quantity;
+    const product = await shopService.getProduct(id);
 
-    // jika melebihi jumlah stok kembalikan error respon
-    if(quantity > produk.stock) {
-      throw errorResponder(
-        errorTypes.UNPROCESSABLE_ENTITY,
-        'order exceeds stock quantity, reduce order quantity'
-      );
-    }
+    // succes jika berhasil meng-order produk
+    const success = await shopService.orderProduct(product.name, id, product.category, product.price, quantity);
 
-    const orderSuccess = await shopService.orderProduct(id, produk.stok);
-
-    if (!orderSuccess) {
+    if (!success) {
       throw errorResponder(
         errorTypes.UNPROCESSABLE_ENTITY,
         'Failed to order product'
       );
     }
 
-    // jika succes kembalikan response
+    // mengembalikan response
+    return response.status(200).json({ 
+      info: "ORDER PRODUCT SUCCESSFULLY",
+      product_Name: product.name,
+      product_Id: id,
+      category: product.category,
+      price: product.price,
+      quantity_Order: quantity,
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+/**
+ * Handle get list of orders request
+ * @param {object} request - Express request object
+ * @param {object} response - Express response object
+ * @param {object} next - Express route middlewares
+ * @returns {object} Response object or pass an error to the next route
+ */
+async function getOrders(request, response, next) {
+  try {
+    // Validasi input query yang masuk
+    const page_number = request.query.page_number || 1;
+    const page_size =
+      request.query.page_size || (await Order.countDocuments({}));
+    if (
+      page_number >
+      Math.abs(Math.ceil((await Order.countDocuments({}))  / page_size))
+    ) {
+      throw errorResponder(errorTypes.VALIDATION, 'page_number over a limit');
+    } else if (isNaN(page_number) || isNaN(page_size)) {
+      throw errorResponder(
+        errorTypes.VALIDATION,
+        'page_number or page_size must be Integer'
+      );
+    } else if (page_number < 0 || page_size < 0) {
+      throw errorResponder(
+        errorTypes.VALIDATION,
+        'page_number or page_size must be positive'
+      );
+    }
+
+    // get orders
+    const orders = await shopService.getOrders(request);
+
+    if (!orders) {
+      throw errorResponder(errorTypes.UNPROCESSABLE_ENTITY, 'Unknown orders');
+    }
+
+    return response.status(200).json(orders);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+/**
+ * Handle get order detail request
+ * @param {object} request - Express request object
+ * @param {object} response - Express response object
+ * @param {object} next - Express route middlewares
+ * @returns {object} Response object or pass an error to the next route
+ */
+async function getOrder(request, response, next) {
+  try {
+    // get product sesuai id
+    const order = await shopService.getOrder(request.params.id);
+
+    if (!order) {
+      throw errorResponder(errorTypes.UNPROCESSABLE_ENTITY, 'Unknown order');
+    }
+
+    return response.status(200).json(order);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+/**
+ * Handle update order request
+ * @param {object} request - Express request object
+ * @param {object} response - Express response object
+ * @param {object} next - Express route middlewares
+ * @returns {object} Response object or pass an error to the next route
+ */
+async function updateOrder(request, response, next) {
+  try {
+    // mengambil variabel dari params dan body
+    const id = request.params.id;
+    const Name = request.body.product_Name || await shopService.getOrder(id).product_Name;
+    const Product_Id = await shopService.getOrder(id).product_Id;
+    const Category = request.body.category || await shopService.getOrder(id).category;
+    const Price = request.body.price || await shopService.getOrder(id).price;
+    const quantity_Order = request.body.quantity_Order || await shopService.getOrder(id).quantity_Order;
+
+    // Name must be unique
+    const nameIsRegistered = await shopService.nameIsRegistered(request.body.product_Name);
+    if (nameIsRegistered) {
+      throw errorResponder(
+        errorTypes.NAME_ALREADY_TAKEN,
+        'Name is already registered'
+      );
+    }
+
+    // jika succes mengupdate produk mengembalikan true
+    const success = await shopService.updateOrder(id, Name, Product_Id, Category, Price, quantity_Order);
+    if (!success) {
+      throw errorResponder(
+        errorTypes.UNPROCESSABLE_ENTITY,
+        'Failed to update order'
+      );
+    }
+
+    // mengembalikan response
+    return response.status(200).json({ 
+      order_id: id,
+      info: "SUCCESS UPDATE ORDER",
+      product_Name: Name,
+      product_Id: Product_Id,
+      category: Category,
+      price: Price,
+      quantity_Order: quantity_Order,
+     });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+/**
+ * Handle delete order request
+ * @param {object} request - Express request object
+ * @param {object} response - Express response object
+ * @param {object} next - Express route middlewares
+ * @returns {object} Response object or pass an error to the next route
+ */
+async function deleteOrder(request, response, next) {
+  try {
+    const id = request.params.id;
+  
+    const success = await shopService.deleteOrder(id);
+    if (!success) {
+      throw errorResponder(
+        errorTypes.UNPROCESSABLE_ENTITY,
+        'failed to delete order, insert a valid id'
+      );
+    }
+
     return response.status(200).json({ 
       id: id,
-      info: "ORDER SUCCESS",
-      name: produk.name,
-      category: produk.category,
-      price: produk.price,
-      order_quantity: quantity,
-      unit: produk.unit,
-     });
+      info: "ORDER SUCCESSFULLY DELETED"
+    });
   } catch (error) {
     return next(error);
   }
@@ -250,4 +386,8 @@ module.exports = {
   updateProduct,
   deleteProduct,
   orderProduct,
+  getOrders,
+  getOrder,
+  updateOrder,
+  deleteOrder,
 }; 

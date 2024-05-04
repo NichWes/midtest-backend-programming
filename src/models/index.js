@@ -4,6 +4,7 @@ const logger = require('../core/logger')('app');
 
 const usersSchema = require('./users-schema');
 const productsSchema = require('./products-schema');
+const ordersSchema = require('./orders-schema');
 
 mongoose.connect(`${config.database.connection}/${config.database.name}`, {
   useNewUrlParser: true,
@@ -24,8 +25,14 @@ const Product = mongoose.model(
   mongoose.Schema(productsSchema, { timestamps: true})
 );
 
+const Order = mongoose.model(
+  'orders',
+  mongoose.Schema(ordersSchema, { timestamps: true})
+);
+
 module.exports = {
   mongoose,
   User,
   Product,
+  Order,
 };
